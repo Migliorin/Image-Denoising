@@ -1,0 +1,21 @@
+name: image-denoising
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+  - nvidia
+dependencies:
+  - pytorch==2.1.2
+  - torchvision==0.16.2 
+  - torchaudio==2.1.2
+  - pytorch-cuda=12.1
+  - numpy
+  - pandas
+  - Pillow
+  - scikit-learn
+  - pip
+  - pip:
+    - opencv-python
+    - image-similarity-measures[speedups]
+    - ipykernel
+    - tqdm
