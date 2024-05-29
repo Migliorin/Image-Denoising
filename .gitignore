@@ -1,5 +1,6 @@
 *.json
+*.pyc
 
 data/
-
+*/MNIST/
 */.ipynb_checkpoints
