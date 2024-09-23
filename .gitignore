@@ -5,3 +5,4 @@ data/
 */MNISTCustomDataset/
 */MNIST/
 */.ipynb_checkpoints
+__pycache__/
