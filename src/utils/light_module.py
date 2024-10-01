@@ -10,8 +10,8 @@ class LightningVisionTransformer(L.LightningModule):
         self.loss = loss
         self.optim = optim
 
-    def forward(self, denoised_img, original_img):
-        return self.model(denoised_img, original_img)
+    def forward(self, denoised_img):
+        return self.model(denoised_img)
 
     def training_step(self, batch, batch_idx):
         ori_img, noi_img = batch
@@ -22,7 +22,7 @@ class LightningVisionTransformer(L.LightningModule):
 
         loss_ = self.loss(denoised_img, ori_img.cpu())
 
-        self.log("loss",loss_)
+        self.log("loss",loss_,prog_bar=True)
 
         return loss_
 
@@ -36,7 +36,7 @@ class LightningVisionTransformer(L.LightningModule):
 
         loss_ = self.loss(denoised_img, ori_img.cpu())
 
-        self.log("val_loss", loss_)
+        self.log("val_loss", loss_,prog_bar=True)
 
         return loss_
 

@@ -6,7 +6,7 @@ import pandas as pd
 from PIL import Image
 from tqdm import tqdm
 
-from model import VisionModel
+from model_v2 import VisionModel
 from noises import add_noise
 from dataset import CustomImageDataset
 
@@ -24,18 +24,18 @@ from lightning.pytorch import Trainer
 
 class AddNoise(torch.nn.Module):
     def forward(self, img, noise,**kwargs):
-        noisy_image = add_noise(img, noise_type=noise,**kwargs)
+        noisy_image = add_noise(img, noise_type=noise,salt_pepper_amount=0.02,**kwargs)
 
         return Image.fromarray(noisy_image)
 
 if __name__ == '__main__':
-    batch_size = 2
+    batch_size = 3
     num_workers = 8
     lr = 0.001
     epochs = 64
     patience = 5
     #dir_path_checkpoint = "/home/lucas/experimentos/"
-    name_exp = "Teste_usando_14_head_e_MSE_loss"
+    name_exp = "Novo_modelo"
     dir_save_logs = "/home/lucas/experimentos/"
     #prefix = "mse_head_14"
     name_to_save = "checkpoint-{epoch:02d}-{val_loss:.2f}"
@@ -47,15 +47,14 @@ if __name__ == '__main__':
         v2.ToDtype(torch.float32, scale=True)
     ])
     
-    path = "/home/lucas/datasets/dataframe_v1.csv"
+    #path = "/home/lucas/datasets/dataframe_v1.csv"
+    path = "/home/lucas/Image-Denoising/dataframes/dataframe_v1.csv"
     df = pd.read_csv(path)
 
     train = df[df["split"] == 'train']
-    test = df[df["split"] == 'test']
     val = df[df["split"] == 'val']
 
     train_dataset = CustomImageDataset(train,transform,noise)
-    test_dataset = CustomImageDataset(test,transform,noise)
     val_dataset = CustomImageDataset(val,transform,noise)
 
     
@@ -71,23 +70,19 @@ if __name__ == '__main__':
         num_workers=num_workers,
         shuffle=False)
     
-    custom_dataloader_test = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False)
-    
     model = VisionModel(
         img_size=(batch_size,3,224,224),
         patch_size=14,
         #patch_size=28,
         token_len=512,
+        #token_len=1024,
+        embed_dim=512,
         num_layers=12,
         num_heads=16
     )
     
     model = model.cuda()
-    loss_fn = nn.MSELoss()
+    loss_fn = nn.MSELoss(reduction='none')
     optimizer = torch.optim.Adam(model.parameters(),lr=lr)
     model_ = LightningVisionTransformer(model,loss_fn,optimizer)
 
@@ -119,8 +114,8 @@ if __name__ == '__main__':
         ],
         max_epochs=epochs,
         logger=logger,
-        devices=2,
-        accelerator="auto",
+        devices=1,
+        accelerator="gpu",
         #strategy="ddp"
     )
     #print(path_checkpoint)
