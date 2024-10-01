@@ -21,3 +21,4 @@ dependencies:
     - image-similarity-measures[speedups]
     - ipykernel
     - tqdm
+    - einops
