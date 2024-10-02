@@ -1,4 +1,4 @@
-#import os
+import os
 #os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 import pandas as pd
@@ -122,7 +122,9 @@ if __name__ == '__main__':
         devices=2,
         accelerator="auto"
     )
-
+    
+    os.makedirs(path_checkpoint, exist_ok = True)
+    
     with open(f"{path_checkpoint}/hparams.yml","w+") as outfile:
         yaml.dump(params,outfile)
 
