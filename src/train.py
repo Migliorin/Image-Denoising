@@ -120,7 +120,7 @@ if __name__ == '__main__':
         ],
         max_epochs=epochs,
         logger=logger,
-        devices=2,
+        devices=1,
         accelerator="auto"
     )
     
