@@ -1,4 +1,5 @@
 import torch.nn.functional as F
+from torch import nn
 
 class MSELossMine(nn.MSELoss):
     def __init__(self):
