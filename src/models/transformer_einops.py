@@ -127,7 +127,7 @@ class VisionModel(nn.Module):
         # Pass tokens through the transformer encoder
         out_encode = self.transformer_encoder(x)
 
-        cls_tokens_output = repeat(out_encode[:,:1,:],'1 1 d -> b n d',b = B, n = N)
+        cls_tokens_output = repeat(out_encode[:,:1,:],'b 1 d -> b n d', n = N)
 
         output_decoder = self.transformer_decoder(image_token,cls_tokens_output)
 
