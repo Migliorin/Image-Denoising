@@ -1,0 +1,18 @@
+name_exp: ""
+
+train:
+  dir_save_logs: "/home/lucas/experimentos/"
+  name_to_save: "checkpoint-{epoch:02d}-{val_loss:.2f}"
+  top_k: 1
+  epochs: 64
+  patience: 5
+  loss:
+    model: "nn.MSELoss()"
+  optim:
+    model: "torch.optim.Adam(model.parameters(),lr=0.001)"
+
+dataset:
+  batch_size: 2
+  num_workers: 8
+  dataframe: "/home/lucas/datasets/dataframe_v1.csv"
+
