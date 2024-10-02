@@ -104,9 +104,6 @@ if __name__ == '__main__':
     )
     path_checkpoint = f"{dir_save_logs}/{name_exp}/version_{logger.version}"
 
-    with open(f"{path_checkpoint}/hparams.yml","w+") as outfile:
-        yaml.dump(params,outfile)
-
     checkpoint_callback = ModelCheckpoint(
         save_top_k=top_k,
         monitor="val_loss",
@@ -125,6 +122,9 @@ if __name__ == '__main__':
         devices=2,
         accelerator="auto"
     )
+
+    with open(f"{path_checkpoint}/hparams.yml","w+") as outfile:
+        yaml.dump(params,outfile)
 
     trainer.fit(
         model_,
