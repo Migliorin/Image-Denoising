@@ -10,6 +10,7 @@ from models.transformer_torch import VisionModel
 from noises import add_noise
 from dataset import CustomImageDataset
 
+from losses.mse_loss_mine import MSELossMine
 
 import torch
 from torch import nn
