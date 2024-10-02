@@ -8,3 +8,7 @@ data/
 */.ipynb_checkpoints
 __pycache__/
 .ipynb_checkpoints/
+
+params.yml
+
+dataframes/dataframe_v1.csv
