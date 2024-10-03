@@ -18,9 +18,9 @@ class LightningVisionTransformer(L.LightningModule):
 
         noi_img = noi_img.cuda()
         denoised_img = self.model(noi_img)
-        denoised_img = denoised_img.cpu()
+        denoised_img = denoised_img
 
-        loss = self.compute_loss_patch(denoised_img, ori_img.cpu())
+        loss = self.compute_loss_patch(denoised_img, ori_img)
 
         self.log("loss", loss, prog_bar=True)
 
@@ -32,9 +32,9 @@ class LightningVisionTransformer(L.LightningModule):
 
         noi_img = noi_img.cuda()
         denoised_img = self.model(noi_img)
-        denoised_img = denoised_img.cpu()
+        denoised_img = denoised_img
 
-        loss = self.compute_loss_patch(denoised_img, ori_img.cpu())
+        loss = self.compute_loss_patch(denoised_img, ori_img)
 
         self.log("val_loss", loss, prog_bar=True)
 
