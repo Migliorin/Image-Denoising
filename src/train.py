@@ -6,7 +6,7 @@ from PIL import Image
 from tqdm import tqdm
 import yaml
 
-from models.transformer_torch import VisionModel
+from models.vision_transformer import VisionModel
 from noises import add_noise
 from dataset import CustomImageDataset
 

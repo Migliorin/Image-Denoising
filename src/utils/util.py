@@ -6,6 +6,33 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import PIL.Image as Image
+import torch
+
+def get_sinusoid_encoding(num_tokens, token_len):
+    """Make Sinusoid Encoding Table
+    
+    Args:
+        num_tokens (int): number of tokens
+        token_len (int): length of a token
+                
+    Returns:
+        torch.FloatTensor: sinusoidal position encoding table
+    """
+    def get_position_angle_vec(i):
+        """Calculate the positional angle vector for a given position i"""
+        return [i / np.power(10000, 2 * (j // 2) / token_len) for j in range(token_len)]
+    
+    # Create a sinusoid table with positional angle vectors for each token
+    sinusoid_table = np.array([get_position_angle_vec(i) for i in range(num_tokens)])
+    
+    # Apply sine to even indices in the array; 2i
+    sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])
+    
+    # Apply cosine to odd indices in the array; 2i+1
+    sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
+    
+    # Convert the numpy array to a torch FloatTensor and add a batch dimension
+    return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
 
 class FindFacesGeneric():
