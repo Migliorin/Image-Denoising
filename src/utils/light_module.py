@@ -20,7 +20,7 @@ class LightningVisionTransformer(L.LightningModule):
         denoised_img = self.model(noi_img)
         denoised_img = denoised_img.cpu()
 
-        loss = self.compute_loss(denoised_img, ori_img.cpu())
+        loss = self.compute_loss_patch(denoised_img, ori_img.cpu())
 
         self.log("loss", loss, prog_bar=True)
 
@@ -34,7 +34,7 @@ class LightningVisionTransformer(L.LightningModule):
         denoised_img = self.model(noi_img)
         denoised_img = denoised_img.cpu()
 
-        loss = self.compute_loss(denoised_img, ori_img.cpu())
+        loss = self.compute_loss_patch(denoised_img, ori_img.cpu())
 
         self.log("val_loss", loss, prog_bar=True)
 
@@ -46,6 +46,16 @@ class LightningVisionTransformer(L.LightningModule):
         denoised_img = denoised_img[:,:-1,:]
 
         return self.loss(denoised_img,ori_img)
+
+    def compute_loss_patch(self,denoised_img,ori_img):
+        ori_img = self.model.patch_tokenization(ori_img)
+        denoised_img = denoised_img[:,:-1,:]
+
+        denoised_img = self.model.unpatch_tokenization(denoised_img)
+        denoised_img = self.model.patch_tokenization(denoised_img)
+
+        self.loss(denoised_img,ori_img)
+
 
     def configure_optimizers(self):
         return self.optim
