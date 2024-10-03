@@ -54,7 +54,7 @@ class LightningVisionTransformer(L.LightningModule):
         denoised_img = self.model.unpatch_tokenization(denoised_img)
         denoised_img = self.model.patch_tokenization(denoised_img)
 
-        self.loss(denoised_img,ori_img)
+        return self.loss(denoised_img,ori_img)
 
 
     def configure_optimizers(self):
