@@ -131,13 +131,13 @@ class VisionModel(nn.Module):
         encoder = x + self.emb_posi[:,1:,:]
         decoder = x + self.decoder_emb_posi
 
-        cls_token = self.cls_token + self.self.emb_posi[:,:1,:]
+        cls_token = self.cls_token + self.emb_posi[:,:1,:]
         
         # Expand the class token to the batch size and concatenate with image tokens
         cls_token = cls_token.expand(B, -1, -1)
         
         encoder = torch.cat((cls_token, encoder), dim=1)
-        decoder = torch.cat((cls_token,decoder),dim=1)
+        decoder = torch.cat((cls_token, decoder),dim=1)
         
         x = self.transformer(encoder, decoder)
         
