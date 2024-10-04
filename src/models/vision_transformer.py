@@ -105,8 +105,14 @@ class VisionModel(nn.Module):
         
         self.emb_posi = nn.Parameter(
             data=get_sinusoid_encoding(self.num_tokens + 1, self.token_len),
-            requires_grad=True
+            requires_grad=False
         )
+
+        self.decoder_emb_posi = nn.Parameter(
+            data=get_sinusoid_encoding(self.num_tokens, self.token_len),
+            requires_grad=False
+        )
+        
 
         self.linear = nn.Linear(self.token_len, (self.patch_size**2) * C)
 
@@ -121,14 +127,19 @@ class VisionModel(nn.Module):
         
         B, N, E = x.shape
         
-        # Expand the class token to the batch size and concatenate with image tokens
-        tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((tokens, x), dim=1)
-        
         # Add positional encoding to the tokens
-        x += self.emb_posi
+        encoder = x + self.emb_posi[:,1:,:]
+        decoder = x + self.decoder_emb_posi
 
-        x = self.transformer(x, x)
+        cls_token = self.cls_token + self.self.emb_posi[:,:1,:]
+        
+        # Expand the class token to the batch size and concatenate with image tokens
+        cls_token = cls_token.expand(B, -1, -1)
+        
+        encoder = torch.cat((cls_token, encoder), dim=1)
+        decoder = torch.cat((cls_token,decoder),dim=1)
+        
+        x = self.transformer(encoder, decoder)
         
         x = self.dropout(x)
 
