@@ -1,7 +1,7 @@
 import torch.nn.functional as F
 from torch import nn
 import torch
-
+from einops.layers.torch import Rearrange
 
 class MSELossPatchEinops(nn.MSELoss):
     def __init__(self, patch_size):
