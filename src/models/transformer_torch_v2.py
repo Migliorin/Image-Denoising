@@ -1,70 +1,10 @@
 import numpy as np
 import torch
 import torch.nn as nn
+from util import get_sinusoid_encoding
+from models.tokenization import PatchTokenizationUnfold
 
-def get_sinusoid_encoding(num_tokens, token_len):
-    """Make Sinusoid Encoding Table
-    
-    Args:
-        num_tokens (int): number of tokens
-        token_len (int): length of a token
-                
-    Returns:
-        torch.FloatTensor: sinusoidal position encoding table
-    """
-    def get_position_angle_vec(i):
-        """Calculate the positional angle vector for a given position i"""
-        return [i / np.power(10000, 2 * (j // 2) / token_len) for j in range(token_len)]
-    
-    # Create a sinusoid table with positional angle vectors for each token
-    sinusoid_table = np.array([get_position_angle_vec(i) for i in range(num_tokens)])
-    
-    # Apply sine to even indices in the array; 2i
-    sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])
-    
-    # Apply cosine to odd indices in the array; 2i+1
-    sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
-    
-    # Convert the numpy array to a torch FloatTensor and add a batch dimension
-    return torch.FloatTensor(sinusoid_table).unsqueeze(0)
-
-class PatchTokenization(nn.Module):
-    def __init__(self, patch_size=50, token_len=768, channels=3):
-        """Patch Tokenization Module
-        
-        Args:
-            patch_size (int): the side length of a square patch
-            token_len (int): desired length of an output token
-            channels (int): channel of input image
-        """
-        super().__init__()
-        self.patch_size = patch_size
-        self.token_len = token_len
-        self.channels = channels
-
-        # Layer to split the image into patches
-        self.split = nn.Unfold(kernel_size=self.patch_size, stride=self.patch_size, padding=0)
-        
-        # Linear layer to project patches to the token length
-        self.project = nn.Linear((self.patch_size**2) * self.channels, token_len)
-
-    def forward(self, x):
-        """Forward pass of the PatchTokenization module.
-        
-        Args:
-            x (torch.Tensor): Input image tensor
-            
-        Returns:
-            torch.Tensor: Encoded image tensor
-        """
-        # Split image into patches and rearrange the dimensions
-        x = self.split(x).transpose(2, 1)
-        
-        # Project the patches to the desired token length
-        x = self.project(x)
-        return x
-
-class VisionModel(nn.Module):
+class VisionModelTransformerTorchV2(nn.Module):
     def __init__(self, img_size, patch_size, token_len, embed_dim=512, num_heads=8, num_layers=6):
         """Vision Transformer Model
         
@@ -91,7 +31,7 @@ class VisionModel(nn.Module):
         self.num_tokens = (H // self.patch_size) * (W // self.patch_size)
         
         # Initialize the patch tokenization module
-        self.patch_tokenization = PatchTokenization(
+        self.patch_tokenization = PatchTokenizationUnfold(
             patch_size=patch_size,
             token_len=token_len,
             channels=C

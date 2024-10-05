@@ -6,13 +6,18 @@ train:
   top_k: 1
   epochs: 64
   patience: 5
+  model: "VisionModelTransformerEinops(img_size=(2,3,224,224), patch_size=14, token_len=512, embed_dim=512, num_heads=8, num_layers=6)"
+  train_module: "TrainModule(model,loss_fn,optimizer)"
   loss:
     model: "nn.MSELoss()"
   optim:
     model: "torch.optim.Adam(model.parameters(),lr=0.001)"
+  noise:
+    model: "AddNoise()"
 
 dataset:
   batch_size: 2
   num_workers: 8
   dataframe: "/home/lucas/datasets/dataframe_v1.csv"
+  transformation: "get_transform_v2()"
 

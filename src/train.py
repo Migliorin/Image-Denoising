@@ -1,33 +1,28 @@
 import os
 #os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-import pandas as pd
-from PIL import Image
-from tqdm import tqdm
-import yaml
-
-from models.vision_transformer import VisionModel
-from noises import add_noise
-from dataset import CustomImageDataset
-
-from losses.mse_loss_mine import MSELossMine, MSELossPatch
-
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from utils.light_module import LightningVisionTransformer
-from torchvision.transforms import v2
 
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.callbacks import EarlyStopping
 from lightning.pytorch import Trainer
 
-class AddNoise(torch.nn.Module):
-    def forward(self, img, noise,**kwargs):
-        noisy_image = add_noise(img, noise_type=noise,**kwargs)
+import pandas as pd
+from PIL import Image
+from tqdm import tqdm
+import yaml
 
-        return Image.fromarray(noisy_image)
+from losses import *
+from modules import *
+from models import *
+from transformation import *
+from noises import AddNoise
+from dataset import CustomImageDataset
+
+
 
 if __name__ == '__main__':
     with open('params.yml', 'r') as file:
@@ -43,11 +38,9 @@ if __name__ == '__main__':
     name_to_save = params["train"]["name_to_save"]
     top_k = params["train"]["top_k"]
 
-    noise = AddNoise()
-    transform = v2.Compose([
-        v2.PILToTensor(),
-        v2.ToDtype(torch.float32, scale=True)
-    ])
+    noise = eval(params["train"]["noise"]["model"])
+
+    transform = eval(params["dataset"]["transformation"])
     
     path = params["dataset"]["dataframe"]
 
@@ -79,20 +72,14 @@ if __name__ == '__main__':
         batch_size=batch_size,
         num_workers=num_workers,
         shuffle=False)
-    
-    model = VisionModel(
-        img_size=(batch_size,3,224,224),
-        patch_size=14, 
-        token_len=512,
-        num_layers=12,
-        num_heads=16
-    )
-    
+
+    model = eval(params["train"]["model"])
     model = model.cuda()
+
     loss_fn = eval(params["train"]["loss"]["model"])
     optimizer = eval(params["train"]["optim"]["model"])
     
-    model_ = LightningVisionTransformer(model,loss_fn,optimizer)
+    model = eval(params["train"]["train_module"])
 
     early_stopping = EarlyStopping(
         'val_loss',
@@ -130,7 +117,7 @@ if __name__ == '__main__':
         yaml.dump(params,outfile)
 
     trainer.fit(
-        model_,
+        model,
         custom_dataloader_train,
         custom_dataloader_val
     )

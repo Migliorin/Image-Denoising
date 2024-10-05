@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import torch
+from PIL import Image
 
 
 def add_noise(image, noise_type='gaussian', scale=0.1, sigma=30, salt_pepper_amount=0.05):
@@ -43,3 +45,15 @@ def add_noise(image, noise_type='gaussian', scale=0.1, sigma=30, salt_pepper_amo
     noisy_image = np.clip(noisy_image, 0, 255).astype(np.uint8)
 
     return noisy_image
+
+
+
+class AddNoise(torch.nn.Module):
+    def __init__(self, **kwargs):
+        super(AddNoise, self).__init__()
+        self.kwargs = kwargs  # Armazena os kwargs no construtor
+
+    def forward(self, img, noise):
+        noisy_image = add_noise(img, noise_type=noise, **self.kwargs)  # Usa os kwargs armazenados no construtor
+        return Image.fromarray(noisy_image)
+
