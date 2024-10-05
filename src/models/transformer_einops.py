@@ -41,7 +41,7 @@ class VisionModelTransformerEinops(nn.Module):
 
         self.unpatch_tokenization = UnPatchTokenizationEinops(
             patch_size=patch_size,
-            img_size=(C,H,W)
+            img_size=W
         )
 
         # Define the transformer encoder
