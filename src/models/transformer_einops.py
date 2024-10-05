@@ -18,7 +18,7 @@ class VisionModelTransformerEinops(nn.Module):
             num_heads (int): Number of attention heads in the transformer layers
             num_layers (int): Number of transformer layers
         """
-        super(VisionModel, self).__init__()
+        super(VisionModelTransformerEinops, self).__init__()
         
         self.img_size = img_size
         B, C, H, W = self.img_size
