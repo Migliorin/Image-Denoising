@@ -6,7 +6,7 @@ from models.tokenization import PatchTokenizationEinops
 
 class VisionModelTransformerTorchV3(nn.Module):
     def __init__(self, img_size, patch_size, token_len, embed_dim=512, num_heads=8, num_layers=6):
-        super(VisionModelTransformerTorchV2, self).__init__()
+        super(VisionModelTransformerTorchV3, self).__init__()
         
         self.img_size = img_size
         B, C, H, W = self.img_size
