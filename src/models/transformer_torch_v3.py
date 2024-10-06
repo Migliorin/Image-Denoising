@@ -80,6 +80,6 @@ class VisionModelTransformerTorchV3(nn.Module):
         # Pass the decoder output through the linear layers to reconstruct the image
         #x = decoder_output
         x = self.linear(decoder_output)
-        x = self.sigmoid(x)
+        x = torch.sigmoid(x)
 
         return x
