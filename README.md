@@ -6,6 +6,7 @@
     * [2.2. Steps](#22-steps)
 * [3. About Datasets](#3-about-datasets)
 * [4. Annotations](#4-annotations)
+* [5. Train results](#5-train-results)
 
 <!-- vim-markdown-toc -->
 
@@ -42,3 +43,7 @@ The experiments were done using the following datasets:
 # 4. Annotations
 
 1. dataframe_v1.csv - Only salt and pepper noise with 8604 images. Train split is 70/15/15
+
+# 5. Train results
+
+The params and results are save at [results/README.md](results/README.md)
