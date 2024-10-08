@@ -46,4 +46,4 @@ The experiments were done using the following datasets:
 
 # 5. Train results
 
-The params and results are save at (results/README.md)[results/README.md]
+The params and results are save at [results/README.md](results/README.md)
