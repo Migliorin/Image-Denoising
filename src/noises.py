@@ -4,26 +4,18 @@ import torch
 from PIL import Image
 
 
-def add_noise(image, noise_type='gaussian', scale=0.1, sigma=30, salt_pepper_amount=0.05):
-    """
-    Add non-Gaussian and Gaussian noise to an image.
-
-    Args:
-    - image: Input image (numpy array).
-    - noise_type: Type of non-Gaussian noise. Options: 'gaussian', 'uniform', 'exponential', 'poisson', 'salt_pepper'.
-    - scale: Scaling factor to adjust the magnitude of the noise.
-    - sigma: Standard deviation of Gaussian noise.
-    - salt_pepper_amount: Probability of adding salt or pepper noise.
-
-    Returns:
-    - Image with added non-Gaussian noise.
-    """
+def add_noise(image, noise_type='gaussian', scale_unifom=50, scale_expo=35, scale_poisson=90, sigma=30,
+              salt_pepper_amount=0.05,ksize=(7,7),sigmaX=0):
+    
     if noise_type == 'uniform':
-        noise = np.random.uniform(low=-scale, high=scale, size=image.shape)
+        noise = np.random.uniform(low=-scale_unifom, high=scale_unifom, size=image.shape)
     elif noise_type == 'exponential':
-        noise = np.random.exponential(scale, size=image.shape)
+        noise = np.random.exponential(scale_expo, size=image.shape)
+    elif noise_type == 'blur':
+        noisy_image = cv2.GaussianBlur(image, ksize, sigmaX=sigmaX)
+        return noisy_image
     elif noise_type == 'poisson':
-        noise = np.random.poisson(scale, size=image.shape)
+        noise = np.random.poisson(scale_poisson, size=image.shape)
     elif noise_type == 'gaussian':
         noise = np.random.normal(0, sigma, image.shape)
     elif noise_type == 'salt_pepper':

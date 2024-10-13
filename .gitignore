@@ -11,4 +11,4 @@ __pycache__/
 
 params.yml
 
-dataframes/dataframe_v1.csv
+*.csv
