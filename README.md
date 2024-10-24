@@ -42,7 +42,10 @@ The experiments were done using the following datasets:
 
 # 4. Annotations
 
-1. dataframe_v1.csv - Only salt and pepper noise with 8604 images. Train split is 70/15/15
+1. dataframe_v1.csv - Only salt and pepper noise with 8604 images. Train split is 70/15/15.
+2. dataframe_v2.csv - Salt and pepper, Gaussian, Uniform, Exponential and Poisson with 21510 images. Train split is 70/15/15.
+3. dataframe_v3.csv - Salt and pepper, Gaussian, Uniform, Exponential, Poisson and Blur with 25812
+   image. Train split is 70/15/15.
 
 # 5. Train results
 
