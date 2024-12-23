@@ -22,3 +22,4 @@
 | Transformer Torch V2 Normal | 5 | 32 | 256 | 38454.510000 | MSELossPatchEinops | 0.0001 | 14 | 512 | 8 | 6 | Salt Pepper | `dataframe_v1.csv` | `get_transform_v2()` |
 | Transformer Torch V2 Normal | 6 | 32 | 256 | 132827.270000 | MSELossPatchEinops | 0.00001 | 14 | 512 | 8 | 6 | Salt Pepper | `dataframe_v1.csv` | `get_transform_v2()` |
 | Transformer Torch V2 Normal | 7 | 32 | 1024 | 88106.650000 | MSELossPatchEinops | 0.0001 | 14 | 512 | 8 | 6 | Salt Pepper | `dataframe_v1.csv` | `get_transform_v2()` |
+| Transformer Torch V2 Normal | 14 | 32 | 512 | 4636.990000 | MSELossPatchEinops | 0.0001 | 14 | 512 | 8 | 6 | All | `dataframe_v3.csv` | `get_transform_v3()` |
