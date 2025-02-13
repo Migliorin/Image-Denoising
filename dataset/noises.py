@@ -2,6 +2,46 @@ import numpy as np
 import cv2
 import torch
 from PIL import Image
+import random
+
+def apply_gaussian_blur(image, sigma):
+    # Aplicar desfoque gaussiano
+    kernel_size = int(2 * np.ceil(2 * sigma) + 1)
+    return cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
+
+def downsample_image(image, factor):
+    # Reduzir a resolução da imagem
+    return cv2.resize(image, (image.shape[1] // factor, image.shape[0] // factor), interpolation=cv2.INTER_LINEAR)
+
+def add_gaussian_noise(image, delta):
+    # Adicionar ruído gaussiano
+    row, col, ch = image.shape
+    mean = 0
+    sigma = delta ** 0.5
+    gauss = np.random.normal(mean, sigma, (row, col, ch))
+    gauss = gauss.reshape(row, col, ch)
+    noisy = image + gauss
+    return np.clip(noisy, 0, 255).astype(np.uint8)
+
+def apply_jpeg_compression(image, quality):
+    # Aplicar compressão JPEG
+    pil_img = Image.fromarray(image)
+    pil_img.save('temp.jpg', quality=quality)
+    return cv2.imread('temp.jpg')
+
+def generate_low_quality_image(high_quality_image):
+    # Gerar imagem de baixa qualidade
+    sigma = random.uniform(0.2, 10)
+    r = random.randint(1, 8)
+    delta = random.randint(0, 15)
+    q = random.randint(60, 100)
+    
+    blurred = apply_gaussian_blur(high_quality_image, sigma)
+    downsampled = downsample_image(blurred, r)
+    noisy = add_gaussian_noise(downsampled, delta)
+    low_quality_image = apply_jpeg_compression(noisy, q)
+    
+    return low_quality_image
 
 
 def add_noise(image, noise_type='gaussian', scale_unifom=50, scale_expo=35, scale_poisson=90, sigma=30,

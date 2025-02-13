@@ -1,15 +1,10 @@
 *.json
 *.pyc
 *.pth
+*.csv
+*.bk
 
-data/
-*/MNISTCustomDataset/
-*/MNIST/
-*/.ipynb_checkpoints
 __pycache__/
 .ipynb_checkpoints/
 
-params.yml
 
-*.csv
-*.bk

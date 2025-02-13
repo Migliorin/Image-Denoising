@@ -1,0 +1,23 @@
+name_exp: ""
+
+train:
+  dir_save_logs: "/home/lucas/experimentos/"
+  name_to_save: "checkpoint-{epoch:02d}-{val_loss:.2f}"
+  top_k: 1
+  epochs: 64
+  patience: 5
+  model: 
+    patch_size: 16
+    token_len: 512
+    num_heads: 8
+    num_layers: 6
+  lr: 0.0001
+
+dataset:
+  batch_size: 2
+  num_workers: 8
+  ffhq_path: "/home/lucas/ffhq-dataset/images1024x1024"
+  transformation:
+    w_noise: "noise"
+    wo_noise: "normal"
+

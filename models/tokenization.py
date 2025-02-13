@@ -1,9 +1,8 @@
-import torch
 import torch.nn as nn
 from einops.layers.torch import Rearrange
 
 
-class UnPatchTokenizationEinops(nn.Module):
+class UnPatchTokenization(nn.Module):
     def __init__(self,patch_size=50, img_size=224):
         super().__init__()
         self.patch_size = patch_size
@@ -16,7 +15,7 @@ class UnPatchTokenizationEinops(nn.Module):
     def forward(self,x):
         return self.unpatch_token(x)
 
-class PatchTokenizationEinops(nn.Module):
+class PatchTokenization(nn.Module):
     def __init__(self, patch_size=50, token_len=768, channels=3):
         """Patch Tokenization Module
         
@@ -51,42 +50,3 @@ class PatchTokenizationEinops(nn.Module):
         # Project the patches to the desired token length
         x = self.project(x)
         return x
-
-
-class PatchTokenizationUnfold(nn.Module):
-    def __init__(self, patch_size=50, token_len=768, channels=3):
-        """Patch Tokenization Module
-        
-        Args:
-            patch_size (int): the side length of a square patch
-            token_len (int): desired length of an output token
-            channels (int): channel of input image
-        """
-        super().__init__()
-        self.patch_size = patch_size
-        self.token_len = token_len
-        self.channels = channels
-
-        # Layer to split the image into patches
-        self.split = nn.Unfold(kernel_size=self.patch_size, stride=self.patch_size, padding=0)
-        
-        # Linear layer to project patches to the token length
-        self.project = nn.Linear((self.patch_size**2) * self.channels, token_len)
-
-    def forward(self, x):
-        """Forward pass of the PatchTokenization module.
-        
-        Args:
-            x (torch.Tensor): Input image tensor
-            
-        Returns:
-            torch.Tensor: Encoded image tensor
-        """
-        # Split image into patches and rearrange the dimensions
-        x = self.split(x).transpose(2, 1)
-        
-        # Project the patches to the desired token length
-        x = self.project(x)
-        return x
-
-

@@ -15,17 +15,16 @@ from PIL import Image
 from tqdm import tqdm
 import yaml
 
-from losses import *
-from modules import *
-from models import *
-from transformation import *
-from noises import AddNoise
-from dataset import CustomImageDataset
+from losses import MSELossPatchEinops
+from modules import TrainModule
+from models import TransCLIPRestoration
+from transformation import get_transform
+from dataset import FFHQDegradationDataset
 
 
 
 if __name__ == '__main__':
-    with open('params.yml', 'r') as file:
+    with open('params.yaml', 'r') as file:
         params = yaml.safe_load(file)
         file.close()
 
@@ -38,21 +37,14 @@ if __name__ == '__main__':
     name_to_save = params["train"]["name_to_save"]
     top_k = params["train"]["top_k"]
 
-    noise = eval(params["train"]["noise"]["model"])
-
-    transform = eval(params["dataset"]["transformation"])
+    noise_transform = get_transform(params["dataset"]["transformation"]["w_noise"])
+    normal_transform = get_transform(params["dataset"]["transformation"]["wo_noise"])
     
-    path = params["dataset"]["dataframe"]
-
-    df = pd.read_csv(path)
-
-    train = df[df["split"] == 'train']
-    test = df[df["split"] == 'test']
-    val = df[df["split"] == 'val']
-
-    train_dataset = CustomImageDataset(train,transform,noise)
-    test_dataset = CustomImageDataset(test,transform,noise)
-    val_dataset = CustomImageDataset(val,transform,noise)
+    train_dataset = FFHQDegradationDataset(
+        ffhq_path=params["dataset"]["ffhq_path"],
+        transform=normal_transform,
+        noise_transform=noise_transform
+    )
 
     
     custom_dataloader_train = DataLoader(
@@ -61,25 +53,21 @@ if __name__ == '__main__':
         num_workers=num_workers,
         shuffle=True)
     
-    custom_dataloader_val = DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False)
-    
-    custom_dataloader_test = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False)
 
-    model = eval(params["train"]["model"])
+    model = TransCLIPRestoration(
+        img_size=(batch_size,3,512,512),
+        patch_size=params["train"]["model"]["patch_size"],
+        token_len=params["train"]["model"]["token_len"],
+        embed_dim=params["train"]["model"]["token_len"],
+        num_heads=params["train"]["model"]["num_heads"],
+        num_layers=params["train"]["model"]["num_layers"]
+    )
     model = model.cuda()
 
-    loss_fn = eval(params["train"]["loss"]["model"])
-    optimizer = eval(params["train"]["optim"]["model"])
+    loss_fn = MSELossPatchEinops(patch_size=params["train"]["model"]["patch_size"])
+    optimizer = torch.optim.Adam(model.parameters(),lr=params["train"]["lr"])
     
-    model = eval(params["train"]["train_module"])
+    model = TrainModule(model,loss_fn,optimizer)
 
     early_stopping = EarlyStopping(
         'val_loss',
@@ -96,6 +84,7 @@ if __name__ == '__main__':
         save_top_k=top_k,
         monitor="val_loss",
         mode="min",
+        save_weights_only=True,
         dirpath=path_checkpoint,
         filename=name_to_save,
     )
@@ -118,6 +107,6 @@ if __name__ == '__main__':
 
     trainer.fit(
         model,
-        custom_dataloader_train,
-        custom_dataloader_val
+        custom_dataloader_train
+        #custom_dataloader_val
     )

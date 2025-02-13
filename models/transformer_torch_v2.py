@@ -2,9 +2,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 from util import get_sinusoid_encoding
-from models.tokenization import PatchTokenizationUnfold
+from models.tokenization import PatchTokenization
 
-class VisionModelTransformerTorch(nn.Module):
+class VisionModelTransformerTorchV2(nn.Module):
     def __init__(self, img_size, patch_size, token_len, embed_dim=512, num_heads=8, num_layers=6):
         """Vision Transformer Model
         
@@ -16,7 +16,7 @@ class VisionModelTransformerTorch(nn.Module):
             num_heads (int): Number of attention heads in the transformer layers
             num_layers (int): Number of transformer layers
         """
-        super(VisionModelTransformerTorch, self).__init__()
+        super(VisionModelTransformerTorchV2, self).__init__()
         
         self.img_size = img_size
         B, C, H, W = self.img_size
@@ -31,14 +31,15 @@ class VisionModelTransformerTorch(nn.Module):
         self.num_tokens = (H // self.patch_size) * (W // self.patch_size)
         
         # Initialize the patch tokenization module
-        self.patch_tokenization = PatchTokenizationUnfold(
+        self.patch_tokenization = PatchTokenization(
             patch_size=patch_size,
             token_len=token_len,
             channels=C
         )
         
         # Define the transformer encoder
-        encoder_layer = nn.TransformerEncoderLayer(d_model=embed_dim, nhead=num_heads)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=embed_dim,
+                                                   nhead=num_heads,norm_first=True,batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
         # Define the class token and positional encoding
@@ -52,12 +53,12 @@ class VisionModelTransformerTorch(nn.Module):
         )
 
         # Define the transformer decoder
-        decoder_layer = nn.TransformerDecoderLayer(d_model=embed_dim, nhead=num_heads)
+        decoder_layer = nn.TransformerDecoderLayer(d_model=embed_dim,
+                                                   nhead=num_heads,norm_first=True,batch_first=True)
         self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_layers)
 
         # Define the linear layers for image reconstruction
         self.linear = nn.Linear(self.token_len, (self.patch_size**2) * C)
-        self.final_layer = nn.Linear((self.patch_size**2) * C, C * H * W)
 
     def forward(self, x):
         """Forward pass of the VisionModel.
@@ -81,26 +82,19 @@ class VisionModelTransformerTorch(nn.Module):
         image_token += self.emb_posi
         
         # Permute dimensions to match transformer input requirements
-        image_token = image_token.permute(1, 0, 2)
+        #image_token = image_token.permute(1, 0, 2)
 
         # Pass tokens through the transformer encoder
         out_encode = self.transformer_encoder(image_token)
 
         # Prepare decoder input (CLS token output from the encoder)
-        decoder_input = out_encode[0, :, :].unsqueeze(0)
-        
+        decoder_input = out_encode[:, :1, :]
+
         # Pass the encoder output and decoder input through the transformer decoder
-        decoder_output = self.transformer_decoder(out_encode, decoder_input)
-        
+        decoder_output = self.transformer_decoder(out_encode[:,1:,:], decoder_input)
+
         # Pass the decoder output through the linear layers to reconstruct the image
-        x = decoder_output[0, :, :]
-        x = self.linear(x)
-        x = self.final_layer(x)
+        #x = decoder_output
+        x = self.linear(decoder_output)
 
-        _, C, H, W = self.img_size
-        
-        # Reshape the output to the original image dimensions
-        x = x.reshape(-1, C, H, W)
-        
         return x
-

@@ -1,11 +1,13 @@
-import numpy as np
 import torch
 import torch.nn as nn
 from util import get_sinusoid_encoding
-from models.tokenization import PatchTokenizationEinops
+from models.tokenization import PatchTokenization
 
-class VisionModelTransformerTorchV2(nn.Module):
-    def __init__(self, img_size, patch_size, token_len, embed_dim=512, num_heads=8, num_layers=6):
+from transformers import CLIPProcessor, CLIPModel
+
+
+class TransCLIPRestoration(nn.Module):
+    def __init__(self, img_size, patch_size, token_len, embed_dim=512, num_heads=8, num_layers=6, clip_model="openai/clip-vit-base-patch32"):
         """Vision Transformer Model
         
         Args:
@@ -16,7 +18,7 @@ class VisionModelTransformerTorchV2(nn.Module):
             num_heads (int): Number of attention heads in the transformer layers
             num_layers (int): Number of transformer layers
         """
-        super(VisionModelTransformerTorchV2, self).__init__()
+        super(TransCLIPRestoration, self).__init__()
         
         self.img_size = img_size
         B, C, H, W = self.img_size
@@ -31,10 +33,20 @@ class VisionModelTransformerTorchV2(nn.Module):
         self.num_tokens = (H // self.patch_size) * (W // self.patch_size)
         
         # Initialize the patch tokenization module
-        self.patch_tokenization = PatchTokenizationEinops(
+        self.patch_tokenization = PatchTokenization(
             patch_size=patch_size,
             token_len=token_len,
             channels=C
+        )
+
+        self.model_clip = CLIPModel.from_pretrained(clip_model)
+        self.model_clip = self.model_clip.eval()
+        self.model_clip = self.model_clip.cuda() if torch.cuda.is_available() else self.model_clip
+
+        self.processor_clip = CLIPProcessor.from_pretrained(clip_model)
+        self.feature_block = nn.Sequential(
+            nn.Conv1d(1, 256, 1),
+            nn.GELU()
         )
         
         # Define the transformer encoder
@@ -71,6 +83,15 @@ class VisionModelTransformerTorchV2(nn.Module):
         """
         # Apply patch tokenization to the input image
         image_token = self.patch_tokenization(x)
+        processor = self.processor_clip(images=x,do_rescale=False,return_tensors="pt",padding=True)
+        processor = processor.to(torch.device("cuda")) if torch.cuda.is_available() else processor
+
+        image_feature = self.model_clip.get_image_features(**processor)
+        
+        image_feature = image_feature.unsqueeze(1)
+        image_feature = self.feature_block(image_feature)
+
+        image_token += image_feature
         
         B, N, E = image_token.shape
         
