@@ -3,8 +3,10 @@
 *.pth
 *.csv
 *.bk
+*.ipynb
 
 __pycache__/
 .ipynb_checkpoints/
+notebooks/
 
 
