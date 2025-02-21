@@ -17,6 +17,7 @@ dataset:
   batch_size: 2
   num_workers: 8
   ffhq_path: "/home/lucas/ffhq-dataset/images1024x1024"
+  val: ""
   transformation:
     w_noise: "noise"
     wo_noise: "normal"

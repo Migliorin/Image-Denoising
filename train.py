@@ -52,6 +52,20 @@ if __name__ == '__main__':
         batch_size=batch_size,
         num_workers=num_workers,
         shuffle=True)
+
+    val_dataset = FFHQDegradationDataset(
+        ffhq_path=params["dataset"]["val"],
+        transform=normal_transform,
+        noise_transform=noise_transform
+    )
+
+    
+    custom_dataloader_val = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        shuffle=True)
+
     
 
     model = TransCLIPRestoration(
@@ -107,6 +121,6 @@ if __name__ == '__main__':
 
     trainer.fit(
         model,
-        custom_dataloader_train
-        #custom_dataloader_val
+        custom_dataloader_train,
+        custom_dataloader_val
     )
