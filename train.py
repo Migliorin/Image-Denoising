@@ -64,7 +64,7 @@ if __name__ == '__main__':
         val_dataset,
         batch_size=batch_size,
         num_workers=num_workers,
-        shuffle=True)
+        shuffle=False)
 
     
 
