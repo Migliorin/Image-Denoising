@@ -17,7 +17,6 @@ class TrainModule(L.LightningModule):
 
         noi_img = noi_img.cuda()
         denoised_img = self.model(noi_img)
-        denoised_img = denoised_img
 
         loss = self.loss(denoised_img, ori_img)
 
@@ -30,7 +29,6 @@ class TrainModule(L.LightningModule):
 
         noi_img = noi_img.cuda()
         denoised_img = self.model(noi_img)
-        denoised_img = denoised_img
 
         loss = self.loss(denoised_img, ori_img)
 

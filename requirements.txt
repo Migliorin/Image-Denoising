@@ -1,0 +1,13 @@
+torch
+torchvision
+torchaudio
+scikit-learn
+pandas
+pillow
+lightning
+tqdm
+einops
+pyyaml
+opencv-python
+image-similarity-measures[speedups]
+transformers

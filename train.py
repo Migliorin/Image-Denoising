@@ -1,26 +1,22 @@
 import os
-#os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 import torch
-from torch import nn
 from torch.utils.data import DataLoader
 
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.callbacks import EarlyStopping
 from lightning.pytorch import Trainer
-
-import pandas as pd
-from PIL import Image
-from tqdm import tqdm
 import yaml
 
-from losses import MSELossPatchEinops
+# from losses import MSELossPatchEinops
+from losses import RMSELossPatch
 from modules import TrainModule
-from models import TransCLIPRestoration
+# from models import TransCLIPRestoration
+from models import ModuleOne
 from transformation import get_transform
 from dataset import FFHQDegradationDataset
-
 
 
 if __name__ == '__main__':
@@ -37,16 +33,17 @@ if __name__ == '__main__':
     name_to_save = params["train"]["name_to_save"]
     top_k = params["train"]["top_k"]
 
-    noise_transform = get_transform(params["dataset"]["transformation"]["w_noise"])
-    normal_transform = get_transform(params["dataset"]["transformation"]["wo_noise"])
-    
+    noise_transform = get_transform(
+        params["dataset"]["transformation"]["w_noise"])
+    normal_transform = get_transform(
+        params["dataset"]["transformation"]["wo_noise"])
+
     train_dataset = FFHQDegradationDataset(
         ffhq_path=params["dataset"]["ffhq_path"],
         transform=normal_transform,
         noise_transform=noise_transform
     )
 
-    
     custom_dataloader_train = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -59,29 +56,42 @@ if __name__ == '__main__':
         noise_transform=noise_transform
     )
 
-    
     custom_dataloader_val = DataLoader(
         val_dataset,
         batch_size=batch_size,
         num_workers=num_workers,
         shuffle=False)
 
-    
 
-    model = TransCLIPRestoration(
-        img_size=(batch_size,3,512,512),
+#     model = TransCLIPRestoration(
+#         img_size=(batch_size,3,512,512),
+#         patch_size=params["train"]["model"]["patch_size"],
+#         token_len=params["train"]["model"]["token_len"],
+#         embed_dim=params["train"]["model"]["token_len"],
+#         num_heads=params["train"]["model"]["num_heads"],
+#         num_layers=params["train"]["model"]["num_layers"]
+#     )
+    model = ModuleOne(
+        seq_length=1024,
+        d_patch=768,
+        d_model=params["train"]["model"]["token_len"],
+        progession=768,
         patch_size=params["train"]["model"]["patch_size"],
-        token_len=params["train"]["model"]["token_len"],
-        embed_dim=params["train"]["model"]["token_len"],
-        num_heads=params["train"]["model"]["num_heads"],
-        num_layers=params["train"]["model"]["num_layers"]
+        n_encoder_layers=6,
+        n_decoder_layers=6,
+        d_k=64,
+        d_v=64,
+        h=8,
+        d_ff=2048
     )
     model = model.cuda()
+    model = torch.nn.DataParallel(model, device_ids=[0, 1])
 
-    loss_fn = MSELossPatchEinops(patch_size=params["train"]["model"]["patch_size"])
-    optimizer = torch.optim.Adam(model.parameters(),lr=params["train"]["lr"])
-    
-    model = TrainModule(model,loss_fn,optimizer)
+    # loss_fn = MSELossPatchEinops(patch_size=params["train"]["model"]["patch_size"])
+    loss_fn = RMSELossPatch(patch_size=params["train"]["model"]["patch_size"])
+    optimizer = torch.optim.Adam(model.parameters(), lr=params["train"]["lr"])
+
+    model = TrainModule(model, loss_fn, optimizer)
 
     early_stopping = EarlyStopping(
         'val_loss',
@@ -113,11 +123,11 @@ if __name__ == '__main__':
         devices=1,
         accelerator="auto"
     )
-    
-    os.makedirs(path_checkpoint, exist_ok = True)
-    
-    with open(f"{path_checkpoint}/hparams.yml","w+") as outfile:
-        yaml.dump(params,outfile)
+
+    os.makedirs(path_checkpoint, exist_ok=True)
+
+    with open(f"{path_checkpoint}/hparams.yml", "w+") as outfile:
+        yaml.dump(params, outfile)
 
     trainer.fit(
         model,
