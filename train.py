@@ -62,15 +62,6 @@ if __name__ == '__main__':
         num_workers=num_workers,
         shuffle=False)
 
-
-#     model = TransCLIPRestoration(
-#         img_size=(batch_size,3,512,512),
-#         patch_size=params["train"]["model"]["patch_size"],
-#         token_len=params["train"]["model"]["token_len"],
-#         embed_dim=params["train"]["model"]["token_len"],
-#         num_heads=params["train"]["model"]["num_heads"],
-#         num_layers=params["train"]["model"]["num_layers"]
-#     )
     model = ModuleOne(
         seq_length=1024,
         d_patch=768,
@@ -85,9 +76,6 @@ if __name__ == '__main__':
         d_ff=2048
     )
     model = model.cuda()
-    model = torch.nn.DataParallel(model, device_ids=[0, 1])
-
-    # loss_fn = MSELossPatchEinops(patch_size=params["train"]["model"]["patch_size"])
     loss_fn = RMSELossPatch(patch_size=params["train"]["model"]["patch_size"])
     optimizer = torch.optim.Adam(model.parameters(), lr=params["train"]["lr"])
 
